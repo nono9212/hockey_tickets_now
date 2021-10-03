@@ -2,3 +2,5 @@
 .ipynb_checkpoints/hockeytickets-checkpoint.ipynb
 
 hockeytickets.ipynb
+
+*.ipynb
