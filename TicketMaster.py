@@ -1,12 +1,50 @@
 import json
 import requests
-
+import numpy
 import datetime
+import os
+import numpy as np
 
 class TicketMaster:
     
+    def __init__(self):
+        try:
+            
+            self.placeInfoDict = np.load('data/placeInfoDict.npy',allow_pickle='TRUE').item()
+            self.IDToPlaceName = np.load('data/IDToPlaceName.npy',allow_pickle='TRUE').item()
 
-    def getNextMaches():
+        except:
+            self.placeInfoDict, self.IDToPlaceName = self.getAllSeatsDict()
+            if(not os.path.exists("data")):
+                os.makedirs('data')
+            np.save('data/placeInfoDict.npy', self.placeInfoDict) 
+            np.save('data/IDToPlaceName.npy', self.IDToPlaceName) 
+    
+    def getAllSeatsDict(self, gameID = '31005B2A0984366E'):
+        
+        urlPlace = "https://mapsapi.tmol.io/maps/geometry/3/event/"+gameID+"/placeDetailNoKeys?systemId=HOST&useHostGrids=true&app=CCP&sectionLevel=true"
+        rplace = json.loads(requests.get(urlPlace).text)['pages'][0]["segments"]
+        
+        placeDict = {}
+        IDToPlaceName = {}
+        for section in rplace:
+            for row in section['segments'][0]['segments']:
+                for seat in row['placesNoKeys']:
+                    ID = seat[0]
+                    ligne = row['name']
+                    colonne = seat[1]
+                    coords = [seat[2], seat[3]]
+                    section_name = section['name']
+                    placeDict[section_name+'-'+ligne+colonne] = {'ticketMasterID':ID,
+                                                                 'section': section_name,
+                                                                 'row': ligne,
+                                                                 'colonne':colonne,
+                                                                 'coords': coords}
+                    IDToPlaceName[ID] = section_name+'-'+ligne+colonne
+        return placeDict, IDToPlaceName
+    
+
+    def getNextMaches(self, ):
         startDate = datetime.date.today().strftime("%Y-%m-%d")
         endDate =(datetime.date.today()+datetime.timedelta(weeks=4*3)).strftime("%Y-%m-%d")
         
@@ -29,7 +67,7 @@ class TicketMaster:
                                    }]
         return matchDict
 
-    def seatKeysToArray(key, ante = ""):
+    def seatKeysToArray(self, key, ante = ""):
         i=0
         while(i < len(key) and key[i] != '['):
             ante += key[i]
@@ -67,7 +105,7 @@ class TicketMaster:
         
     
     
-    def getPricesFromID(gameID):
+    def getPricesFromID(self, gameID):
         urlPrice = "https://offeradapter.ticketmaster.com/api/ismds/event/"+gameID+"/facets?show=totalpricerange+places&by=offers&oq=not(locked)&q=available&apikey=b462oi7fic6pehcdkzony5bxhe&apisecret=pquzpfrfz7zd2ylvtz3w5dtyse&resaleChannelId=internal.ecommerce.consumer.desktop.web.browser.ticketmaster.ca"
         r2 = json.loads(requests.get(urlPrice).text)['facets']
         
