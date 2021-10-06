@@ -4,6 +4,7 @@ import numpy
 import datetime
 import os
 import numpy as np
+from requests.structures import CaseInsensitiveDict
 
 class TicketMaster:
     
@@ -16,11 +17,30 @@ class TicketMaster:
             if(not os.path.exists("data")):
                 os.makedirs('data')
             np.save('data/IDToPlaceName.npy', self.IDToPlaceName) 
+        
+        self.headers = CaseInsensitiveDict()
+        self.headers["authority"] = "offeradapter.ticketmaster.com"
+        self.headers["pragma"] = "no-cache"
+        self.headers["cache-control"] = "no-cache"
+        self.headers["sec-ch-ua"] = '^^"Chromium^^";v=^^"94^^", ^^"Google Chrome^^";v=^^"94^^", ^^";Not A Brand^^";v=^^"99^^"'
+        self.headers["sec-ch-ua-mobile"] = "?0"
+        self.headers["tmps-correlation-id"] = "227cc9af-247d-4e56-96ad-a6d2bb6daed3"
+        self.headers["sec-ch-ua-platform"] = '^^"Windows^^"'
+        self.headers["accept"] = "*/*"
+        self.headers["origin"] = "https://www.ticketmaster.ca"
+        self.headers["sec-fetch-site"] = "cross-site"
+        self.headers["sec-fetch-mode"] = "cors"
+        self.headers["sec-fetch-dest"] = "empty"
+        self.headers["referer"] = "https://www.ticketmaster.ca/"
+        self.headers["accept-language"] = "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7"
+        self. headers["cookie"] = "_gid=GA1.2.2058117083.1633467230; _ga=GA1.1.1159935997.1633467229; _ga_Y9KJECPJMY=GS1.1.1633467229.1.1.1633467355.60"
+        
+
     
     def getAllSeatsDict(self, gameID = '31005B2A0984366E'):
         
         urlPlace = "https://mapsapi.tmol.io/maps/geometry/3/event/"+gameID+"/placeDetailNoKeys?systemId=HOST&useHostGrids=true&app=CCP&sectionLevel=true"
-        rplace = json.loads(requests.get(urlPlace).text)['pages'][0]["segments"]
+        rplace = json.loads(requests.get(urlPlace,headers=self.headers).text)['pages'][0]["segments"]
 
         IDToPlaceName = {}
         for section in rplace:
@@ -41,7 +61,7 @@ class TicketMaster:
         
         
         url = "https://statsapi.web.nhl.com/api/v1/schedule?site=fr_nhlCA&startDate="+startDate+"&endDate="+endDate+"&teamId=8&expand=schedule.teams,schedule.venue,schedule.metadata,schedule.ticket,schedule.broadcasts.all"
-        t = requests.get(url)
+        t = requests.get(url,headers=self.headers)
         r = json.loads(t.text)
     
         matchDict = []
@@ -97,8 +117,8 @@ class TicketMaster:
     
     
     def getPricesFromID(self, gameID):
-        urlPrice = "https://offeradapter.ticketmaster.com/api/ismds/event/"+gameID+"/facets?show=totalpricerange+places&by=offers&oq=not(locked)&q=available&apikey=b462oi7fic6pehcdkzony5bxhe&apisecret=pquzpfrfz7zd2ylvtz3w5dtyse&resaleChannelId=internal.ecommerce.consumer.desktop.web.browser.ticketmaster.ca"
-        r2 = json.loads(requests.get(urlPrice).text)['facets']
+        urlPrice = "https://offeradapter.ticketmaster.com/api/ismds/event/31005B2A09703644/facets?show=totalpricerange+places&by=offers&oq=not(locked)&q=available&apikey=b462oi7fic6pehcdkzony5bxhe&apisecret=pquzpfrfz7zd2ylvtz3w5dtyse&resaleChannelId=internal.ecommerce.consumer.desktop.web.browser.ticketmaster.ca"
+        r2 = json.loads(requests.get(urlPrice,headers=self.headers).text)['facets']
         
         
         availableTickets = {}
@@ -110,4 +130,6 @@ class TicketMaster:
                     availableTickets[seatInfo] = ticketOffer['totalPriceRange'][0]['max']
             
         return availableTickets
+
+
 
