@@ -16,6 +16,10 @@ class PriceMonitor:
     
     def __init__(self):
         self.tm = TicketMaster()
+        try:
+            self.recordPrices = np.load('data/recordPrices.npy',allow_pickle='TRUE').item()
+        except:
+            self.recordPrices = {}
         
     def placeToInterrestCategory(self, seat):
         section = seat.split('-')[0]
@@ -48,7 +52,33 @@ class PriceMonitor:
     def update(self):
         self.updateNextMatches()
         for match in self.nextMatches:
+            date = match['date']
+            if(not date in self.recordPrices.keys()):
+                self.recordPrices[date] = {}
             tickets = self.tm.getPricesFromID(match['ticketMasterGameID'])
+            
+            placesNeedingNotification = {}
+            newBestPricesCat = []
+            
+            for (place, prix) in tickets.items():
+                cat = self.placeToInterrestCategory(place)
+                if(not cat in self.recordPrices[date]):
+                    newBestPricesCat += [cat]
+                    self.recordPrices[date][cat] = prix
+                    placesNeedingNotification[cat] = [(place, prix)]
+                elif(self.recordPrices[date][cat] == prix and cat in newBestPricesCat):
+                    if(cat in placesNeedingNotification.keys()):
+                        placesNeedingNotification[cat] += [(place, prix)]
+                    else:
+                        placesNeedingNotification[cat] = [(place, prix)]
+                elif(self.recordPrices[date][cat] > prix):
+                    newBestPricesCat += [cat]
+                    self.recordPrices[date][cat] = prix
+                    placesNeedingNotification[cat] = [(place, prix)]
+        if(not os.path.exists("data")):
+            os.makedirs('data')
+            np.save('data/recordPrices.npy', self.recordPrices)                       
+
         
     def updateNextMatches(self):
         date = datetime.date.today().strftime("%Y-%m-%d")

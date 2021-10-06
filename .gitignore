@@ -4,3 +4,5 @@
 hockeytickets.ipynb
 
 *.ipynb
+
+data/nextMatches.npy
