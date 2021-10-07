@@ -10,7 +10,7 @@ import numpy as np
 import os
 import json
 import requests
-
+import matplotlib.colors
 
 class CentreBell:
     
@@ -47,7 +47,7 @@ class CentreBell:
                                                                  'coords': coords}
         return placeDict
     
-    def plotStadium(self, seatsToHighlight=[], outpath="outputs/test.png"):
+    def plotStadium(self, seatsToHighlight=[], prices=None, outpath="outputs/test.png"):
         
         x = []
         y = []
@@ -65,8 +65,28 @@ class CentreBell:
             c = self.placeInfoDict[s]['coords']
             x += [c[0]/10.0]
             y += [c[1]/10.0]
-        im = ax.scatter(x,y, s=12, c='#FF00FF')
+        if(prices == None):
+            im = ax.scatter(x,y, s=40, c='#FF00FF')
+        else:
+            #cmap = plt.cm.rainbow
+            cmap = matplotlib.colors.LinearSegmentedColormap.from_list("", ["green","yellow","red"])
+            norm = matplotlib.colors.Normalize(vmin=50, vmax=250)
+            im = ax.scatter(x,y, s=40, c=cmap(norm(prices)),edgecolors="#FF00FF",linewidths=0.2)
+        xmin, xmax = ax.get_xlim()
+        ax.set_xlim(xmin-150,xmax+150)
+        donePrices = []
+        for xs,ys,ps in zip(x,y,prices):
+            label = "{:.0f}$".format(ps)
+            if(not ps in donePrices):
+                donePrices+=[ps]
+                ax.annotate(label, # this is the text
+                             (xs,ys), # these are the coordinates to position the label
+                             textcoords="offset points", # how to position the text
+                             xytext=(-15,-2.5),
+                             size=8,
+                             ha='center') # horizontal alignment can be left, right or center
         fig.savefig(outpath,dpi=400, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
         
         
         

@@ -117,7 +117,7 @@ class TicketMaster:
     
     
     def getPricesFromID(self, gameID):
-        urlPrice = "https://offeradapter.ticketmaster.com/api/ismds/event/31005B2A09703644/facets?show=totalpricerange+places&by=offers&oq=not(locked)&q=available&apikey=b462oi7fic6pehcdkzony5bxhe&apisecret=pquzpfrfz7zd2ylvtz3w5dtyse&resaleChannelId=internal.ecommerce.consumer.desktop.web.browser.ticketmaster.ca"
+        urlPrice = "https://offeradapter.ticketmaster.com/api/ismds/event/"+gameID+"/facets?show=totalpricerange+places&by=offers&oq=not(locked)&q=available&apikey=b462oi7fic6pehcdkzony5bxhe&apisecret=pquzpfrfz7zd2ylvtz3w5dtyse&resaleChannelId=internal.ecommerce.consumer.desktop.web.browser.ticketmaster.ca"
         r2 = json.loads(requests.get(urlPrice,headers=self.headers).text)['facets']
         
         
