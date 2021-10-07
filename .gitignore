@@ -4,3 +4,9 @@
 hockeytickets.ipynb
 
 *.ipynb
+
+data/nextMatches.npy
+
+__pycache__/TicketMaster.cpython-37.pyc
+
+outputs/
