@@ -94,9 +94,15 @@ class PriceMonitor:
                 placesToHighlight += [p[0]]
                 prices += [p[1]]
         title = match['opposingTeam']+" - " + my_format(match['date'])
-        self.cb.plotStadium(placesToHighlight, prices,outpath="outputs/"+match['date']+".png")
+        self.cb.plotStadium(placesToHighlight, prices,outpath="/var/www/hockey/outputs/"+match['date']+".png")
         print(title)
         print(text)
+        print("http://arnaudchol.de/outputs/"+match['date']+".png")
+        data = {"value3":title,
+        "value1":'Starting at '+str(min(prices)),
+       "value2": "https://arnaudchol.de/outputs/"+match['date']+".png"}
+        requests.post("https://maker.ifttt.com/trigger/hockey/with/key/bUfsQ7DscX53vAj3AsdAQC", data=data)
+        requests.post("https://maker.ifttt.com/trigger/hockey/with/key/-qGdCTJMyPbzFAFLIZp-x", data=data)
         print()
         
          
@@ -129,3 +135,11 @@ def ordinal(n):
     else:
         return '{}th'.format(n)
         
+
+
+import time
+import requests
+pm = PriceMonitor()
+while 1:
+    pm.update()
+    time.sleep(60*10)

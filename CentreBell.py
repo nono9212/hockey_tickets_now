@@ -73,7 +73,7 @@ class CentreBell:
             norm = matplotlib.colors.Normalize(vmin=50, vmax=250)
             im = ax.scatter(x,y, s=40, c=cmap(norm(prices)),edgecolors="#FF00FF",linewidths=0.2)
         xmin, xmax = ax.get_xlim()
-        ax.set_xlim(xmin-150,xmax+150)
+        ax.set_xlim(xmin-250,xmax+250)
         donePrices = []
         for xs,ys,ps in zip(x,y,prices):
             label = "{:.0f}$".format(ps)
@@ -85,7 +85,7 @@ class CentreBell:
                              xytext=(-15,-2.5),
                              size=8,
                              ha='center') # horizontal alignment can be left, right or center
-        fig.savefig(outpath,dpi=400, bbox_inches='tight', pad_inches=0)
+        fig.savefig(outpath,dpi=100, bbox_inches='tight', pad_inches=0)
         plt.close(fig)
         
         
