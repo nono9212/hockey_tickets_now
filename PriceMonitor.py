@@ -6,6 +6,7 @@ Created on Wed Oct  6 17:21:36 2021
 """
 from TicketMaster import TicketMaster
 from CentreBell import CentreBell
+from Stubhub import Stubhub
 import datetime
 import numpy as np
 import os
@@ -17,6 +18,7 @@ class PriceMonitor:
     
     def __init__(self):
         self.tm = TicketMaster()
+        self.sh = Stubhub()
         self.cb = CentreBell()
         try:
             self.recordPrices = np.load('data/recordPrices.npy',allow_pickle='TRUE').item()
@@ -58,7 +60,10 @@ class PriceMonitor:
             date = match['date']
             if(not date in self.recordPrices.keys()):
                 self.recordPrices[date] = {}
-            tickets = self.tm.getPricesFromID(match['ticketMasterGameID'])
+            h1 = self.tm.getPricesFromID(match['ticketMasterGameID'])
+            h2 = self.sh.getPrices(match['stubhubID'])
+            
+            tickets = {k : min(i for i in (h1.get(k), h2.get(k)) if i) for k in h1.keys() | h2}
             
             placesNeedingNotification = {}
             newBestPricesCat = []
@@ -114,6 +119,10 @@ class PriceMonitor:
         except:
             print("No files found which match up to date match status, going to scrap it")
             self.nextMatches = self.tm.getNextMaches()
+            stubhubIDs = self.sh.getNextMatches()
+            for i,e in enumerate(self.nextMatches):
+                if(e["date"] in stubhubIDs.keys()):
+                    self.nextMatches[i]["stubhubID"] = stubhubIDs[e["date"]]
             if(not os.path.exists("data")):
                 os.makedirs('data')
             np.save('data/nextMatches.npy', {date:self.nextMatches}) 
@@ -140,6 +149,6 @@ def ordinal(n):
 import time
 import requests
 pm = PriceMonitor()
-while 1:
-    pm.update()
-    time.sleep(60*10)
+#while 1:
+    #pm.update()
+    #time.sleep(60*10)
